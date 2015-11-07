@@ -1,13 +1,13 @@
 ///////////////////////////////// includes ///////////////////////////////////
 #include <glbinding/gl/gl.h>
-// load glbinding extensions
+  // load glbinding extensions
 #include <glbinding/Binding.h>
 
-//dont load gl bindings from glfw
+  //dont load gl bindings from glfw
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-// use floats and med precision operations
+  // use floats and med precision operations
 #define GLM_PRECISION_MEDIUMP_FLOAT
 #include <glm/vec3.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -27,8 +27,8 @@
 
 
 #define PI 3.1415926535897932384626433832795028841971
-// use gl definitions from glbinding 
-using namespace gl;
+  // use gl definitions from glbinding 
+  using namespace gl;
 
 /////////////////////////// variable definitions //////////////////////////////
 // vertical field of view of camera
@@ -213,10 +213,11 @@ int main(int argc, char* argv[]) {
 
     rendermoon(0.02, 16.5f, 0.8);
 
-    render(0.038, 25.0f, 0.588);
-    render(0.025,25.5f, 3.34);
-    render(0.0592, 35.0f, 2.155);
-    render(0.03, 40.2f, 4.55);
+    render(0.038, 20.0f, 0.588);
+    render(0.055, 25.5f, 0.920);
+
+    render(0.0592, 30.0f, 0.55);
+    render(0.03, 35.2f, 0.65);
 
     //render star
     shader_active = 1;
@@ -346,7 +347,7 @@ void rendermoon(float scale_factor, float translation_factor, float rotation_fac
 
   glm::mat4 model_matrix = glm::rotate(glm::mat4{}, float(now*rotation_factor), glm::vec3{ 0.0f, 1.0f, 0.0f });
   model_matrix = glm::translate(model_matrix, glm::vec3{ 1.0f, 0.0f, 0.0f });
-  model_matrix = glm::rotate(model_matrix, float(rotation*rotation_factor * 30), glm::vec3{ 0.0f, 1.0f, 0.0f });
+  model_matrix = glm::rotate(model_matrix, float(rotation*rotation_factor * 50), glm::vec3{ 0.0f, 1.0f, 0.0f });
   model_matrix = glm::scale(model_matrix, glm::vec3(scale_factor));
   model_matrix = glm::translate(model_matrix, glm::vec3{ translation_factor, 0.0f, 0.0f });
   model_matrix = glm::rotate(model_matrix, float(rotation*rotation_factor), glm::vec3{ 0.0f,1.0f, 0.0f });
