@@ -25,6 +25,8 @@
 #include <stdlib.h>                                         //To create random numbers
 #include <time.h>                                          //To use system clock as "seed" for random numbers
 
+
+#define PI 3.1415926535897932384626433832795028841971
 // use gl definitions from glbinding 
 using namespace gl;
 
@@ -48,7 +50,9 @@ GLuint simple_program = 0;
 model planet_model{};
 //Vector for positions of the stars
 std::vector<float> v_star_position;
+//std::vector<float> orbitCPUGeometry;
 
+unsigned numVerticesInOrbit = 360;
 //setting low and high values for the vertices
 
 int lowv = -70;
@@ -72,10 +76,11 @@ struct model_object {
 };
 model_object planet_object;
 model_object star_object;
+//model_object orbit_object;
 
 // camera matrices
-glm::mat4 camera_view = glm::translate(glm::mat4{}, glm::vec3{0.0f, 0.0f, 4.0f});
-glm::mat4 camera_projection{1.0f};
+glm::mat4 camera_view = glm::translate(glm::mat4{}, glm::vec3{ 0.0f, 0.0f, 4.0f });
+glm::mat4 camera_projection{ 1.0f };
 
 // uniform locations
 GLint location_normal_matrix = -1;
@@ -98,7 +103,7 @@ void show_fps();
 void render(float scale_factor, float translation_factor, float rotation_factor);
 void rendermoon(float scale_factor, float translation_factor, float rotation_factor);
 void renderstar(float scale_factor, float translation_factor, float rotation_factor);
-
+//void renderorbit(float translation_factor);
 /////////////////////////////// main function /////////////////////////////////
 int main(int argc, char* argv[]) {
 
@@ -106,7 +111,7 @@ int main(int argc, char* argv[]) {
 
   //Random function taken from: http://forums.codeguru.com/showthread.php?351834-how-do-i-generate-a-random-float-between-0-and-1
 
-  float x,y,z;
+  float x, y, z;
   int r, g, b;
   for (int i = 0; i < 100; i++) {
     //Assign position for a star
@@ -127,8 +132,8 @@ int main(int argc, char* argv[]) {
 
   }
 
-  if(!glfwInit()) {
-    std::exit(EXIT_FAILURE);  
+  if (!glfwInit()) {
+    std::exit(EXIT_FAILURE);
   }
 
   // set OGL version explicitly 
@@ -139,7 +144,7 @@ int main(int argc, char* argv[]) {
 
   // create window, if unsuccessfull, quit
   window = glfwCreateWindow(window_width, window_height, "OpenGL Framework", NULL, NULL);
-  if(!window) {
+  if (!window) {
     glfwTerminate();
     std::exit(EXIT_FAILURE);
   }
@@ -150,8 +155,8 @@ int main(int argc, char* argv[]) {
   glfwSwapInterval(0);
   // register key input function
   glfwSetKeyCallback(window, key_callback);
- //// // allow free mouse movement
- 
+  //// // allow free mouse movement
+
   //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   // register resizing function
   glfwSetFramebufferSizeCallback(window, update_view);
@@ -168,7 +173,7 @@ int main(int argc, char* argv[]) {
   }
   // no resource path specified, use default
   else {
-    std::string exe_path{argv[0]};
+    std::string exe_path{ argv[0] };
     resource_path = exe_path.substr(0, exe_path.find_last_of("/\\"));
     resource_path += "/../../resources/";
   }
@@ -188,33 +193,35 @@ int main(int argc, char* argv[]) {
   // enable depth testing
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
-  
+
   // rendering loop
-  while(!glfwWindowShouldClose(window)) {
+  while (!glfwWindowShouldClose(window)) {
     // query input
     glfwPollEvents();
     // clear buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // draw geometry
-  shader_active = 0;
-  update_shader_programs(0);
-  render(0.2, 0.0f, 0.002);
-  render(0.025,04.0f, 02.35);
-  render(0.04, 07.0f, 0.7);
-  
-  render(0.027,10.0f, 1.5);
-  render(0.06, 13.5f, 2.8);
-  
-  rendermoon(0.021,13.5f, 2.8);
-  render(0.04, 20.0f, 1.7);
-  render(0.025,4.5f, 1.34);
-  render(0.06, 30.0f, 2.155);
-  render(0.03, 35.2f, 0.35);
+    shader_active = 0;
+    update_shader_programs(0);
+    render(0.2, 0.0f, 1.0);
 
-  //render star
-  shader_active = 1;
-  update_shader_programs(1);
-  renderstar(0.03, 0.0f, 0.0);
+    render(0.0255, 7.0f, 0.5);
+
+    render(0.0375, 10.0f, 0.3);
+
+    render(0.06, 16.5f, 0.8);
+
+    rendermoon(0.02, 16.5f, 0.8);
+
+    render(0.038, 25.0f, 0.588);
+    render(0.025,25.5f, 3.34);
+    render(0.0592, 35.0f, 2.155);
+    render(0.03, 40.2f, 4.55);
+
+    //render star
+    shader_active = 1;
+    update_shader_programs(1);
+    renderstar(0.03, 0.0f, 0.0);
     // swap draw buffer to front
     glfwSwapBuffers(window);
     // display fps
@@ -250,7 +257,7 @@ void initialize_geometry() {
   // second attribute is 3 floats with no offset & stride
   glVertexAttribPointer(1, model::NORMAL.components, model::NORMAL.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::NORMAL]);
 
-   // generate generic buffer
+  // generate generic buffer
   glGenBuffers(1, &planet_object.element_BO);
   // bind this as an vertex array buffer containing all attributes
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, planet_object.element_BO);
@@ -274,11 +281,11 @@ void initialize_geometry() {
   glEnableVertexAttribArray(0);
   // first attribute is 3 floats with no offset & stride
   //1st: The specific attribute, 2nd: , 3rd: the type, 5th: 3 positions + 3 type of colors, 6th: reference of start of each starts attribute
-  glVertexAttribPointer(0, model::POSITION.components, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (GLvoid*) (0));
+  glVertexAttribPointer(0, model::POSITION.components, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (GLvoid*)(0));
   // activate second attribute on gpu
   glEnableVertexAttribArray(1);
   // second attribute is 3 floats with no offset & stride
-  glVertexAttribPointer(1, model::NORMAL.components, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (GLvoid*) (3 * sizeof(float)));
+  glVertexAttribPointer(1, model::NORMAL.components, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (GLvoid*)(3 * sizeof(float)));
 
   // generate generic buffer
   glGenBuffers(1, &star_object.element_BO);
@@ -296,34 +303,37 @@ void render(float scale_factor, float translation_factor, float rotation_factor)
 {
 
   float now = glfwGetTime();
-  float noww = now*0.05;
+  //float noww = now*0.0001*365/30.0;
+  float rotation = now*0.05;
+
 
   glm::mat4 model_matrix = glm::rotate(glm::mat4{}, float(now*rotation_factor), glm::vec3{ 0.0f, 1.0f, 0.0f });
   model_matrix = glm::scale(model_matrix, glm::vec3(scale_factor));
-
   model_matrix = glm::translate(model_matrix, glm::vec3{ translation_factor, 0.0f, 0.0f });
-  
-  //rotate it aroound y-axis
-  model_matrix = glm::rotate(model_matrix, float(now*0.01), glm::vec3{ 0.0f,1.0f, 0.0f });
+  model_matrix = glm::rotate(model_matrix, float(rotation*rotation_factor), glm::vec3{ 0.0f,1.0f, 0.0f });
 
   ///////
-   glUniformMatrix4fv(location_model_matrix, 1, GL_FALSE, glm::value_ptr(model_matrix));
- 
+  glUniformMatrix4fv(location_model_matrix, 1, GL_FALSE, glm::value_ptr(model_matrix));
+
   // extra matrix for normal transformation to keep them orthogonal to surface
-  
-   glm::mat4 normal_matrix = glm::inverseTranspose(camera_view * model_matrix);
-  
-    glUniformMatrix4fv(location_normal_matrix, 1, GL_FALSE, glm::value_ptr(normal_matrix));
-  
-   glBindVertexArray(planet_object.vertex_AO);
-  
-    utils::validate_program(simple_program);
-  
-// draw bound vertex array as triangles using bound shader
-  
+
+  glm::mat4 normal_matrix = glm::inverseTranspose(camera_view * model_matrix);
+
+  glUniformMatrix4fv(location_normal_matrix, 1, GL_FALSE, glm::value_ptr(normal_matrix));
+
+  glBindVertexArray(planet_object.vertex_AO);
+
+  utils::validate_program(simple_program);
+
+  // draw bound vertex array as triangles using bound shader
+
   glDrawElements(GL_TRIANGLES, GLsizei(planet_model.indices.size()), model::INDEX.type, NULL);
- 
+
 }
+
+
+
+
 
 //For the render activates a different glDrawTriangle
 
@@ -331,21 +341,24 @@ void rendermoon(float scale_factor, float translation_factor, float rotation_fac
 {
 
   float now = glfwGetTime();
-  
+  // float noww = now*0.0001 * 365 / 30.0;
+  float rotation = now*0.05;
+
   glm::mat4 model_matrix = glm::rotate(glm::mat4{}, float(now*rotation_factor), glm::vec3{ 0.0f, 1.0f, 0.0f });
-
+  model_matrix = glm::translate(model_matrix, glm::vec3{ 1.0f, 0.0f, 0.0f });
+  model_matrix = glm::rotate(model_matrix, float(rotation*rotation_factor * 30), glm::vec3{ 0.0f, 1.0f, 0.0f });
   model_matrix = glm::scale(model_matrix, glm::vec3(scale_factor));
-
-  model_matrix = glm::translate(model_matrix, glm::vec3{ 2.5f, 0.0f, 0.0f });
-
-  model_matrix = glm::rotate(model_matrix, float(now*rotation_factor * 02), glm::vec3{ 0.0f, 1.0f, 0.0f });
-
   model_matrix = glm::translate(model_matrix, glm::vec3{ translation_factor, 0.0f, 0.0f });
+  model_matrix = glm::rotate(model_matrix, float(rotation*rotation_factor), glm::vec3{ 0.0f,1.0f, 0.0f });
 
-  
+
+
+
+
+
   //rotate it aroound y-axis
-    model_matrix = glm::rotate(model_matrix, float(now*0.01), glm::vec3{ 0.0f, 1.0f, 0.0f });
-////
+  // model_matrix = glm::rotate(model_matrix, float(now*0.01), glm::vec3{ 1.0f, 0.0f, 0.0f });
+  ////
   glUniformMatrix4fv(location_model_matrix, 1, GL_FALSE, glm::value_ptr(model_matrix));
 
   // extra matrix for normal transformation to keep them orthogonal to surface
@@ -394,7 +407,7 @@ void renderstar(float scale_factor, float translation_factor, float rotation_fac
 
   // draw bound vertex array as triangles using bound shader
 
-  glDrawArrays(GL_POINTS, 0, sizeof(star_object)*6);
+  glDrawArrays(GL_POINTS, 0, sizeof(star_object) * 6);
 
 }
 
@@ -408,7 +421,7 @@ void update_view(GLFWwindow* window, int width, int height) {
   float aspect = float(width) / float(height);
   float fov_y = camera_fov;
   // if width is smaller, extend vertical fov 
-  if(width < height) {
+  if (width < height) {
     fov_y = 2.0f * glm::atan(glm::tan(camera_fov * 0.5f) * (1.0f / aspect));
   }
   // projection is hor+ 
@@ -442,13 +455,13 @@ void update_shader_programs(int shader) {
       new_program = shader_loader::program(resource_path + "shaders/starshader.vert",
         resource_path + "shaders/starshader.frag");
     }
-    
+
     // free old shader
     glDeleteProgram(simple_program);
 
 
-  simple_program = new_program;
-    
+    simple_program = new_program;
+
     // bind shader
     glUseProgram(simple_program);
     // after shader is recompiled uniform locations may change
@@ -460,7 +473,7 @@ void update_shader_programs(int shader) {
     update_view(window, width, height);
     update_camera();
   }
-  catch(std::exception&) {
+  catch (std::exception&) {
     // dont crash, allow another try
   }
 }
@@ -476,18 +489,18 @@ void update_uniform_locations() {
 ///////////////////////////// misc functions ////////////////////////////////
 // handle key input
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-  if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
     glfwSetWindowShouldClose(window, 1);
   }
-  else if(key == GLFW_KEY_R && action == GLFW_PRESS) {
+  else if (key == GLFW_KEY_R && action == GLFW_PRESS) {
     update_shader_programs(0);
   }
-  else if(key == GLFW_KEY_W && action == GLFW_PRESS) {
-    camera_view = glm::translate(camera_view, glm::vec3{0.0f, 0.0f, -0.1f});
+  else if (key == GLFW_KEY_W && action == GLFW_PRESS) {
+    camera_view = glm::translate(camera_view, glm::vec3{ 0.0f, 0.0f, -0.1f });
     update_camera();
   }
-  else if(key == GLFW_KEY_S && action == GLFW_PRESS) {
-    camera_view = glm::translate(camera_view, glm::vec3{0.0f, 0.0f, 0.1f});
+  else if (key == GLFW_KEY_S && action == GLFW_PRESS) {
+    camera_view = glm::translate(camera_view, glm::vec3{ 0.0f, 0.0f, 0.1f });
     update_camera();
   }
 }
@@ -496,8 +509,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 void show_fps() {
   ++frames_per_second;
   double current_time = glfwGetTime();
-  if(current_time - last_second_time >= 1.0) {
-    std::string title{"OpenGL Framework - "};
+  if (current_time - last_second_time >= 1.0) {
+    std::string title{ "OpenGL Framework - " };
     title += std::to_string(frames_per_second) + " fps";
 
     glfwSetWindowTitle(window, title.c_str());
