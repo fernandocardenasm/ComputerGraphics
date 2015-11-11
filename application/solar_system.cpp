@@ -25,6 +25,8 @@
 #include <stdlib.h>                                         //To create random numbers
 #include <time.h>                                          //To use system clock as "seed" for random numbers
 
+
+#define PI 3.1415926535897932384626433832795028841971
 // use gl definitions from glbinding 
 using namespace gl;
 
@@ -48,7 +50,9 @@ GLuint simple_program = 0;
 model planet_model{};
 //Vector for positions of the stars
 std::vector<float> v_star_position;
+//std::vector<float> orbitCPUGeometry;
 
+unsigned numVerticesInOrbit = 360;
 //setting low and high values for the vertices
 
 int lowv = -70;
@@ -72,6 +76,7 @@ struct model_object {
 };
 model_object planet_object;
 model_object star_object;
+//model_object orbit_object;
 
 // camera matrices
 glm::mat4 camera_view = glm::translate(glm::mat4{}, glm::vec3{0.0f, 0.0f, 4.0f});
@@ -98,7 +103,7 @@ void show_fps();
 void render(float scale_factor, float translation_factor, float rotation_factor);
 void rendermoon(float scale_factor, float translation_factor, float rotation_factor);
 void renderstar(float scale_factor, float translation_factor, float rotation_factor);
-
+//void renderorbit(float translation_factor);
 /////////////////////////////// main function /////////////////////////////////
 int main(int argc, char* argv[]) {
 
@@ -198,18 +203,21 @@ int main(int argc, char* argv[]) {
     // draw geometry
   shader_active = 0;
   update_shader_programs(0);
-  render(0.2, 0.0f, 0.002);
-  render(0.025,04.0f, 02.35);
-  render(0.04, 07.0f, 0.7);
+  render(0.2, 0.0f, 1.0);
   
-  render(0.027,10.0f, 1.5);
-  render(0.06, 13.5f, 2.8);
+  render(0.0255,7.0f, 0.5);
+
+  render(0.0375, 10.0f, 0.3);
+ 
+  render(0.06, 16.5f, 0.8);
   
-  rendermoon(0.021,13.5f, 2.8);
-  render(0.04, 20.0f, 1.7);
-  render(0.025,4.5f, 1.34);
-  render(0.06, 30.0f, 2.155);
-  render(0.03, 35.2f, 0.35);
+  rendermoon(0.02,16.5f, 0.8);
+
+  render(0.038, 20.0f, 0.588);
+  render(0.055,25.5f, 0.920);
+
+  render(0.0592, 30.0f, 0.55);
+  render(0.03, 35.2f, 0.65);
 
   //render star
   shader_active = 1;
@@ -227,65 +235,65 @@ int main(int argc, char* argv[]) {
 ///////////////////////// initialisation functions ////////////////////////////
 // load models
 void initialize_geometry() {
-  planet_model = model_loader::obj(resource_path + "models/sphere.obj", model::NORMAL);
+	planet_model = model_loader::obj(resource_path + "models/sphere.obj", model::NORMAL);
 
-  // generate vertex array object
-  glGenVertexArrays(1, &planet_object.vertex_AO);
-  // bind the array for attaching buffers
-  glBindVertexArray(planet_object.vertex_AO);
+	// generate vertex array object
+	glGenVertexArrays(1, &planet_object.vertex_AO);
+	// bind the array for attaching buffers
+	glBindVertexArray(planet_object.vertex_AO);
 
-  // generate generic buffer
-  glGenBuffers(1, &planet_object.vertex_BO);
-  // bind this as an vertex array buffer containing all attributes
-  glBindBuffer(GL_ARRAY_BUFFER, planet_object.vertex_BO);
-  // configure currently bound array buffer
-  glBufferData(GL_ARRAY_BUFFER, sizeof(float) * planet_model.data.size(), planet_model.data.data(), GL_STATIC_DRAW);
+	// generate generic buffer
+	glGenBuffers(1, &planet_object.vertex_BO);
+	// bind this as an vertex array buffer containing all attributes
+	glBindBuffer(GL_ARRAY_BUFFER, planet_object.vertex_BO);
+	// configure currently bound array buffer
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * planet_model.data.size(), planet_model.data.data(), GL_STATIC_DRAW);
 
-  // activate first attribute on gpu
-  glEnableVertexAttribArray(0);
-  // first attribute is 3 floats with no offset & stride
-  glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::POSITION]);
-  // activate second attribute on gpu
-  glEnableVertexAttribArray(1);
-  // second attribute is 3 floats with no offset & stride
-  glVertexAttribPointer(1, model::NORMAL.components, model::NORMAL.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::NORMAL]);
+	// activate first attribute on gpu
+	glEnableVertexAttribArray(0);
+	// first attribute is 3 floats with no offset & stride
+	glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::POSITION]);
+	// activate second attribute on gpu
+	glEnableVertexAttribArray(1);
+	// second attribute is 3 floats with no offset & stride
+	glVertexAttribPointer(1, model::NORMAL.components, model::NORMAL.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::NORMAL]);
 
-   // generate generic buffer
-  glGenBuffers(1, &planet_object.element_BO);
-  // bind this as an vertex array buffer containing all attributes
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, planet_object.element_BO);
-  // configure currently bound array buffer
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, model::INDEX.size * planet_model.indices.size(), planet_model.indices.data(), GL_STATIC_DRAW);
+	// generate generic buffer
+	glGenBuffers(1, &planet_object.element_BO);
+	// bind this as an vertex array buffer containing all attributes
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, planet_object.element_BO);
+	// configure currently bound array buffer
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, model::INDEX.size * planet_model.indices.size(), planet_model.indices.data(), GL_STATIC_DRAW);
 
-  //Initialize star
-  // generate vertex array object
-  glGenVertexArrays(1, &star_object.vertex_AO);
-  // bind the array for attaching buffers
-  glBindVertexArray(star_object.vertex_AO);
+	//Initialize star
+	// generate vertex array object
+	glGenVertexArrays(1, &star_object.vertex_AO);
+	// bind the array for attaching buffers
+	glBindVertexArray(star_object.vertex_AO);
 
-  // generate generic buffer
-  glGenBuffers(1, &star_object.vertex_BO);
-  // bind this as an vertex array buffer containing all attributes
-  glBindBuffer(GL_ARRAY_BUFFER, star_object.vertex_BO);
-  // configure currently bound array buffer
-  glBufferData(GL_ARRAY_BUFFER, sizeof(float) * v_star_position.size(), &v_star_position[0], GL_STATIC_DRAW);
+	// generate generic buffer
+	glGenBuffers(1, &star_object.vertex_BO);
+	// bind this as an vertex array buffer containing all attributes
+	glBindBuffer(GL_ARRAY_BUFFER, star_object.vertex_BO);
+	// configure currently bound array buffer
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * v_star_position.size(), &v_star_position[0], GL_STATIC_DRAW);
 
-  // activate first attribute on gpu
-  glEnableVertexAttribArray(0);
-  // first attribute is 3 floats with no offset & stride
-  //1st: The specific attribute, 2nd: , 3rd: the type, 5th: 3 positions + 3 type of colors, 6th: reference of start of each starts attribute
-  glVertexAttribPointer(0, model::POSITION.components, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (GLvoid*) (0));
-  // activate second attribute on gpu
-  glEnableVertexAttribArray(1);
-  // second attribute is 3 floats with no offset & stride
-  glVertexAttribPointer(1, model::NORMAL.components, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (GLvoid*) (3 * sizeof(float)));
+	// activate first attribute on gpu
+	glEnableVertexAttribArray(0);
+	// first attribute is 3 floats with no offset & stride
+	//1st: The specific attribute, 2nd: , 3rd: the type, 5th: 3 positions + 3 type of colors, 6th: reference of start of each starts attribute
+	glVertexAttribPointer(0, model::POSITION.components, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (GLvoid*)(0));
+	// activate second attribute on gpu
+	glEnableVertexAttribArray(1);
+	// second attribute is 3 floats with no offset & stride
+	glVertexAttribPointer(1, model::NORMAL.components, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (GLvoid*)(3 * sizeof(float)));
 
-  // generate generic buffer
-  glGenBuffers(1, &star_object.element_BO);
-  // bind this as an vertex array buffer containing all attributes
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, star_object.element_BO);
-  // configure currently bound array buffer
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(float) * v_star_position.size(), &v_star_position[0], GL_STATIC_DRAW);
+	// generate generic buffer
+	glGenBuffers(1, &star_object.element_BO);
+	// bind this as an vertex array buffer containing all attributes
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, star_object.element_BO);
+	// configure currently bound array buffer
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(float) * v_star_position.size(), &v_star_position[0], GL_STATIC_DRAW);
 }
 
 ///////////////////////////// render functions ////////////////////////////////
@@ -296,15 +304,14 @@ void render(float scale_factor, float translation_factor, float rotation_factor)
 {
 
   float now = glfwGetTime();
-  float noww = now*0.05;
+  //float noww = now*0.0001*365/30.0;
+  float rotation = now*0.05;
+
 
   glm::mat4 model_matrix = glm::rotate(glm::mat4{}, float(now*rotation_factor), glm::vec3{ 0.0f, 1.0f, 0.0f });
   model_matrix = glm::scale(model_matrix, glm::vec3(scale_factor));
-
   model_matrix = glm::translate(model_matrix, glm::vec3{ translation_factor, 0.0f, 0.0f });
-  
-  //rotate it aroound y-axis
-  model_matrix = glm::rotate(model_matrix, float(now*0.01), glm::vec3{ 0.0f,1.0f, 0.0f });
+  model_matrix = glm::rotate(model_matrix, float(rotation*rotation_factor), glm::vec3{ 0.0f,1.0f, 0.0f });
 
   ///////
    glUniformMatrix4fv(location_model_matrix, 1, GL_FALSE, glm::value_ptr(model_matrix));
@@ -322,8 +329,12 @@ void render(float scale_factor, float translation_factor, float rotation_factor)
 // draw bound vertex array as triangles using bound shader
   
   glDrawElements(GL_TRIANGLES, GLsizei(planet_model.indices.size()), model::INDEX.type, NULL);
- 
+
 }
+
+
+
+
 
 //For the render activates a different glDrawTriangle
 
@@ -331,20 +342,23 @@ void rendermoon(float scale_factor, float translation_factor, float rotation_fac
 {
 
   float now = glfwGetTime();
+ // float noww = now*0.0001 * 365 / 30.0;
+  float rotation = now*0.05;
   
   glm::mat4 model_matrix = glm::rotate(glm::mat4{}, float(now*rotation_factor), glm::vec3{ 0.0f, 1.0f, 0.0f });
-
+  model_matrix = glm::translate(model_matrix, glm::vec3{ 1.0f, 0.0f, 0.0f });
+  model_matrix = glm::rotate(model_matrix, float(rotation*rotation_factor * 50), glm::vec3{ 0.0f, 1.0f, 0.0f });
   model_matrix = glm::scale(model_matrix, glm::vec3(scale_factor));
-
-  model_matrix = glm::translate(model_matrix, glm::vec3{ 2.5f, 0.0f, 0.0f });
-
-  model_matrix = glm::rotate(model_matrix, float(now*rotation_factor * 02), glm::vec3{ 0.0f, 1.0f, 0.0f });
-
   model_matrix = glm::translate(model_matrix, glm::vec3{ translation_factor, 0.0f, 0.0f });
+  model_matrix = glm::rotate(model_matrix, float(rotation*rotation_factor), glm::vec3{ 0.0f,1.0f, 0.0f });
+
+  
+
+  
 
   
   //rotate it aroound y-axis
-    model_matrix = glm::rotate(model_matrix, float(now*0.01), glm::vec3{ 0.0f, 1.0f, 0.0f });
+   // model_matrix = glm::rotate(model_matrix, float(now*0.01), glm::vec3{ 1.0f, 0.0f, 0.0f });
 ////
   glUniformMatrix4fv(location_model_matrix, 1, GL_FALSE, glm::value_ptr(model_matrix));
 
