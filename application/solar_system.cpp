@@ -1,13 +1,13 @@
 ///////////////////////////////// includes ///////////////////////////////////
 #include <glbinding/gl/gl.h>
-// load glbinding extensions
+  // load glbinding extensions
 #include <glbinding/Binding.h>
 
-//dont load gl bindings from glfw
+  //dont load gl bindings from glfw
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-// use floats and med precision operations
+  // use floats and med precision operations
 #define GLM_PRECISION_MEDIUMP_FLOAT
 #include <glm/vec3.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -27,6 +27,7 @@
 
 
 #define PI 3.1415926535897932384626433832795028841971
+
 // use gl definitions from glbinding 
 using namespace gl;
 
@@ -79,8 +80,8 @@ model_object star_object;
 //model_object orbit_object;
 
 // camera matrices
-glm::mat4 camera_view = glm::translate(glm::mat4{}, glm::vec3{0.0f, 0.0f, 4.0f});
-glm::mat4 camera_projection{1.0f};
+glm::mat4 camera_view = glm::translate(glm::mat4{}, glm::vec3{ 0.0f, 0.0f, 4.0f });
+glm::mat4 camera_projection{ 1.0f };
 
 // uniform locations
 GLint location_normal_matrix = -1;
@@ -111,7 +112,7 @@ int main(int argc, char* argv[]) {
 
   //Random function taken from: http://forums.codeguru.com/showthread.php?351834-how-do-i-generate-a-random-float-between-0-and-1
 
-  float x,y,z;
+  float x, y, z;
   int r, g, b;
   for (int i = 0; i < 100; i++) {
     //Assign position for a star
@@ -132,8 +133,8 @@ int main(int argc, char* argv[]) {
 
   }
 
-  if(!glfwInit()) {
-    std::exit(EXIT_FAILURE);  
+  if (!glfwInit()) {
+    std::exit(EXIT_FAILURE);
   }
 
   // set OGL version explicitly 
@@ -144,7 +145,7 @@ int main(int argc, char* argv[]) {
 
   // create window, if unsuccessfull, quit
   window = glfwCreateWindow(window_width, window_height, "OpenGL Framework", NULL, NULL);
-  if(!window) {
+  if (!window) {
     glfwTerminate();
     std::exit(EXIT_FAILURE);
   }
@@ -155,8 +156,8 @@ int main(int argc, char* argv[]) {
   glfwSwapInterval(0);
   // register key input function
   glfwSetKeyCallback(window, key_callback);
- //// // allow free mouse movement
- 
+  //// // allow free mouse movement
+
   //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   // register resizing function
   glfwSetFramebufferSizeCallback(window, update_view);
@@ -173,7 +174,7 @@ int main(int argc, char* argv[]) {
   }
   // no resource path specified, use default
   else {
-    std::string exe_path{argv[0]};
+    std::string exe_path{ argv[0] };
     resource_path = exe_path.substr(0, exe_path.find_last_of("/\\"));
     resource_path += "/../../resources/";
   }
@@ -193,9 +194,9 @@ int main(int argc, char* argv[]) {
   // enable depth testing
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
-  
+
   // rendering loop
-  while(!glfwWindowShouldClose(window)) {
+  while (!glfwWindowShouldClose(window)) {
     // query input
     glfwPollEvents();
     // clear buffer
@@ -223,6 +224,7 @@ int main(int argc, char* argv[]) {
   shader_active = 1;
   update_shader_programs(1);
   renderstar(0.03, 0.0f, 0.0);
+
     // swap draw buffer to front
     glfwSwapBuffers(window);
     // display fps
@@ -294,6 +296,7 @@ void initialize_geometry() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, star_object.element_BO);
 	// configure currently bound array buffer
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(float) * v_star_position.size(), &v_star_position[0], GL_STATIC_DRAW);
+
 }
 
 ///////////////////////////// render functions ////////////////////////////////
@@ -314,20 +317,20 @@ void render(float scale_factor, float translation_factor, float rotation_factor)
   model_matrix = glm::rotate(model_matrix, float(rotation*rotation_factor), glm::vec3{ 0.0f,1.0f, 0.0f });
 
   ///////
-   glUniformMatrix4fv(location_model_matrix, 1, GL_FALSE, glm::value_ptr(model_matrix));
- 
+  glUniformMatrix4fv(location_model_matrix, 1, GL_FALSE, glm::value_ptr(model_matrix));
+
   // extra matrix for normal transformation to keep them orthogonal to surface
-  
-   glm::mat4 normal_matrix = glm::inverseTranspose(camera_view * model_matrix);
-  
-    glUniformMatrix4fv(location_normal_matrix, 1, GL_FALSE, glm::value_ptr(normal_matrix));
-  
-   glBindVertexArray(planet_object.vertex_AO);
-  
-    utils::validate_program(simple_program);
-  
-// draw bound vertex array as triangles using bound shader
-  
+
+  glm::mat4 normal_matrix = glm::inverseTranspose(camera_view * model_matrix);
+
+  glUniformMatrix4fv(location_normal_matrix, 1, GL_FALSE, glm::value_ptr(normal_matrix));
+
+  glBindVertexArray(planet_object.vertex_AO);
+
+  utils::validate_program(simple_program);
+
+  // draw bound vertex array as triangles using bound shader
+
   glDrawElements(GL_TRIANGLES, GLsizei(planet_model.indices.size()), model::INDEX.type, NULL);
 
 }
@@ -342,6 +345,7 @@ void rendermoon(float scale_factor, float translation_factor, float rotation_fac
 {
 
   float now = glfwGetTime();
+
  // float noww = now*0.0001 * 365 / 30.0;
   float rotation = now*0.05;
   
@@ -352,11 +356,6 @@ void rendermoon(float scale_factor, float translation_factor, float rotation_fac
   model_matrix = glm::translate(model_matrix, glm::vec3{ translation_factor, 0.0f, 0.0f });
   model_matrix = glm::rotate(model_matrix, float(rotation*rotation_factor), glm::vec3{ 0.0f,1.0f, 0.0f });
 
-  
-
-  
-
-  
   //rotate it aroound y-axis
    // model_matrix = glm::rotate(model_matrix, float(now*0.01), glm::vec3{ 1.0f, 0.0f, 0.0f });
 ////
@@ -408,7 +407,7 @@ void renderstar(float scale_factor, float translation_factor, float rotation_fac
 
   // draw bound vertex array as triangles using bound shader
 
-  glDrawArrays(GL_POINTS, 0, sizeof(star_object)*6);
+  glDrawArrays(GL_POINTS, 0, sizeof(star_object) * 6);
 
 }
 
@@ -422,7 +421,7 @@ void update_view(GLFWwindow* window, int width, int height) {
   float aspect = float(width) / float(height);
   float fov_y = camera_fov;
   // if width is smaller, extend vertical fov 
-  if(width < height) {
+  if (width < height) {
     fov_y = 2.0f * glm::atan(glm::tan(camera_fov * 0.5f) * (1.0f / aspect));
   }
   // projection is hor+ 
@@ -456,13 +455,13 @@ void update_shader_programs(int shader) {
       new_program = shader_loader::program(resource_path + "shaders/starshader.vert",
         resource_path + "shaders/starshader.frag");
     }
-    
+
     // free old shader
     glDeleteProgram(simple_program);
 
 
-  simple_program = new_program;
-    
+    simple_program = new_program;
+
     // bind shader
     glUseProgram(simple_program);
     // after shader is recompiled uniform locations may change
@@ -474,7 +473,7 @@ void update_shader_programs(int shader) {
     update_view(window, width, height);
     update_camera();
   }
-  catch(std::exception&) {
+  catch (std::exception&) {
     // dont crash, allow another try
   }
 }
@@ -490,18 +489,18 @@ void update_uniform_locations() {
 ///////////////////////////// misc functions ////////////////////////////////
 // handle key input
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-  if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
     glfwSetWindowShouldClose(window, 1);
   }
-  else if(key == GLFW_KEY_R && action == GLFW_PRESS) {
+  else if (key == GLFW_KEY_R && action == GLFW_PRESS) {
     update_shader_programs(0);
   }
-  else if(key == GLFW_KEY_W && action == GLFW_PRESS) {
-    camera_view = glm::translate(camera_view, glm::vec3{0.0f, 0.0f, -0.1f});
+  else if (key == GLFW_KEY_W && action == GLFW_PRESS) {
+    camera_view = glm::translate(camera_view, glm::vec3{ 0.0f, 0.0f, -0.1f });
     update_camera();
   }
-  else if(key == GLFW_KEY_S && action == GLFW_PRESS) {
-    camera_view = glm::translate(camera_view, glm::vec3{0.0f, 0.0f, 0.1f});
+  else if (key == GLFW_KEY_S && action == GLFW_PRESS) {
+    camera_view = glm::translate(camera_view, glm::vec3{ 0.0f, 0.0f, 0.1f });
     update_camera();
   }
 }
@@ -510,8 +509,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 void show_fps() {
   ++frames_per_second;
   double current_time = glfwGetTime();
-  if(current_time - last_second_time >= 1.0) {
-    std::string title{"OpenGL Framework - "};
+  if (current_time - last_second_time >= 1.0) {
+    std::string title{ "OpenGL Framework - " };
     title += std::to_string(frames_per_second) + " fps";
 
     glfwSetWindowTitle(window, title.c_str());
