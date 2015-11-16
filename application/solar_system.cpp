@@ -67,6 +67,9 @@ int highv_color = 1;
 //set a variable to know which shader is active, 0: planet, 1:star
 int shader_active = 0;
 
+// color value of a  planet
+float color_for_planet[] = { 0.0, 0.0, 0.0 };
+
 //Vector for RGB of the stars
 std::vector<int> v_star_color;
 // holds gpu representation of model
@@ -88,6 +91,7 @@ GLint location_normal_matrix = -1;
 GLint location_model_matrix = -1;
 GLint location_view_matrix = -1;
 GLint location_projection_matrix = -1;
+GLint location_color_matrix = -1;
 
 // path to the resource folders
 std::string resource_path{};
@@ -101,7 +105,7 @@ void update_shader_programs(int shader);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void initialize_geometry();
 void show_fps();
-void render(float scale_factor, float translation_factor, float rotation_factor);
+void render(float scale_factor, float translation_factor, float rotation_factor, int number_planet);
 void rendermoon(float scale_factor, float translation_factor, float rotation_factor);
 void renderstar(float scale_factor, float translation_factor, float rotation_factor);
 //void renderorbit(float translation_factor);
@@ -204,21 +208,21 @@ int main(int argc, char* argv[]) {
     // draw geometry
   shader_active = 0;
   update_shader_programs(0);
-  render(0.2, 0.0f, 1.0);
+  render(0.2, 0.0f, 1.0,0);
   
-  render(0.0255,7.0f, 0.5);
+  render(0.0255,7.0f, 0.5,1);
 
-  render(0.0375, 10.0f, 0.3);
+  render(0.0375, 10.0f, 0.3,2);
  
-  render(0.06, 16.5f, 0.8);
+  render(0.06, 16.5f, 0.8,3);
   
   rendermoon(0.02,16.5f, 0.8);
 
-  render(0.038, 20.0f, 0.588);
-  render(0.055,25.5f, 0.920);
+  render(0.038, 20.0f, 0.588,4);
+  render(0.055,25.5f, 0.920,5);
 
-  render(0.0592, 30.0f, 0.55);
-  render(0.03, 35.2f, 0.65);
+  render(0.0592, 30.0f, 0.55,6);
+  render(0.03, 35.2f, 0.65,7);
 
   //render star
   shader_active = 1;
@@ -303,12 +307,66 @@ void initialize_geometry() {
 // render model
 
 
-void render(float scale_factor, float translation_factor, float rotation_factor)
+void render(float scale_factor, float translation_factor, float rotation_factor,int number_planet)
 {
-
+	
   float now = glfwGetTime();
   //float noww = now*0.0001*365/30.0;
   float rotation = now*0.05;
+
+  // Colors taken from "https://www.opengl.org/discussion_boards/showthread.php/132502-Color-tables"
+  switch (number_planet)
+  {
+  case 0:  //// Sun - Orange
+	  color_for_planet[0] = 1.0;		
+	  color_for_planet[1] = 0.5;
+	  color_for_planet[2] = 0.0;
+	  break;
+  case 1:  //// Mercury planet - purple
+	  color_for_planet[0] = 1.0;
+	  color_for_planet[1] = 0.0;
+	  color_for_planet[2] = 1.0;
+	  break;
+  case 2:  //// Venus planet 
+	  color_for_planet[0] = 0.0;
+	  color_for_planet[1] = 1.0;
+	  color_for_planet[2] = 0.0;
+	  break;
+  case 3:  //// Earth planet 
+	  color_for_planet[0] = 0.0;
+	  color_for_planet[1] = 0.0;
+	  color_for_planet[2] = 1.0;
+	  break;
+  case 4:  //// Mars planet 
+	  color_for_planet[0] = 1.0;
+	  color_for_planet[1] = 0.0;
+	  color_for_planet[2] = 0.0;
+	  break;
+  case 5:  //// Jupiter planet - cyan
+	  color_for_planet[0] = 0.0;
+	  color_for_planet[1] = 1.0;
+	  color_for_planet[2] = 1.0;
+	  break;
+  case 6:  //// SAturn planet 
+	  color_for_planet[0] = 0.5;
+	  color_for_planet[1] = 1.0;
+	  color_for_planet[2] = 0.0;
+	  break;
+  case 7:  //// Uranus planet 
+	  color_for_planet[0] = 0.5;
+	  color_for_planet[1] = 1.0;
+	  color_for_planet[2] = 0.5;
+	  break;
+  case 8:  //// Neptune planet 
+	  color_for_planet[0] = 0.0;
+	  color_for_planet[1] = 0.5;
+	  color_for_planet[2] = 0.0;
+	  break;
+
+  default:
+	  break;
+  }
+ 
 
 
   glm::mat4 model_matrix = glm::rotate(glm::mat4{}, float(now*rotation_factor), glm::vec3{ 0.0f, 1.0f, 0.0f });
@@ -320,10 +378,13 @@ void render(float scale_factor, float translation_factor, float rotation_factor)
   glUniformMatrix4fv(location_model_matrix, 1, GL_FALSE, glm::value_ptr(model_matrix));
 
   // extra matrix for normal transformation to keep them orthogonal to surface
-
   glm::mat4 normal_matrix = glm::inverseTranspose(camera_view * model_matrix);
 
   glUniformMatrix4fv(location_normal_matrix, 1, GL_FALSE, glm::value_ptr(normal_matrix));
+
+  ////planet color 
+  glUniform3fv(location_color_matrix, 1, color_for_planet);
+  /////
 
   glBindVertexArray(planet_object.vertex_AO);
 
@@ -343,6 +404,11 @@ void render(float scale_factor, float translation_factor, float rotation_factor)
 
 void rendermoon(float scale_factor, float translation_factor, float rotation_factor)
 {
+
+	color_for_planet[0] = 1.0;
+	color_for_planet[1] = 1.0;
+	color_for_planet[2] = 1.0;
+
 
   float now = glfwGetTime();
 
@@ -367,6 +433,10 @@ void rendermoon(float scale_factor, float translation_factor, float rotation_fac
 
   glUniformMatrix4fv(location_normal_matrix, 1, GL_FALSE, glm::value_ptr(normal_matrix));
 
+  ////planet color 
+  glUniform3fv(location_color_matrix, 1, color_for_planet);
+  /////
+  
   glBindVertexArray(planet_object.vertex_AO);
 
   utils::validate_program(simple_program);
@@ -484,6 +554,8 @@ void update_uniform_locations() {
   location_model_matrix = glGetUniformLocation(simple_program, "ModelMatrix");
   location_view_matrix = glGetUniformLocation(simple_program, "ViewMatrix");
   location_projection_matrix = glGetUniformLocation(simple_program, "ProjectionMatrix");
+
+  location_color_matrix = glGetUniformLocation(simple_program, "color_for_planet");
 }
 
 ///////////////////////////// misc functions ////////////////////////////////
