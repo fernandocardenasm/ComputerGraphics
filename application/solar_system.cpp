@@ -106,6 +106,7 @@ GLuint texture_object_Saturn;
 GLuint texture_object_Uranus;
 GLuint texture_object_Neptune;
 GLuint texture_object_Moon;
+GLuint texture_object_Skybox;
 
 //Texture for each planet
 ::texture textureSun;
@@ -118,6 +119,7 @@ GLuint texture_object_Moon;
 ::texture textureUranus;
 ::texture textureNeptune;
 ::texture textureMoon;
+::texture textureSkybox;
 
 /////////////////////////// forward declarations //////////////////////////////
 void quit(int status);
@@ -231,8 +233,13 @@ int main(int argc, char* argv[]) {
     // draw geometry
   shader_active = 0;
   update_shader_programs(0);
+
+  //sun
   render(0.2, 0.0f, 1.0,0);
   
+  //Skybox
+  render(5, 0, 0, 9);
+
   render(0.0255,7.0f, 0.5,1);
 
   render(0.0375, 10.0f, 0.3,2);
@@ -246,6 +253,8 @@ int main(int argc, char* argv[]) {
 
   render(0.0592, 30.0f, 0.55,6);
   render(0.03, 35.2f, 0.65,7);
+
+  
 
   //render star
   shader_active = 1;
@@ -430,6 +439,16 @@ void initialize_geometry() {
 	textureMoon = texture_loader::file(resource_path + "textures/moonmap.png");
 	glTexImage2D(textureMoon.target, 0, GLint(textureMoon.channels), textureMoon.width, textureMoon.height, 0, textureMoon.channels, textureMoon.channel_type, &textureMoon.data[0]);
 
+	//Texture 10 Skybox
+
+	glGenTextures(1, &texture_object_Skybox);
+	glBindTexture(GL_TEXTURE_2D, texture_object_Skybox); // All upcoming GL_TEXTURE_2D operations now have effect on our texture object
+													   // Set our texture parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint)GL_LINEAR);	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint)GL_LINEAR);
+
+	textureSkybox = texture_loader::file(resource_path + "textures/skyboxmap.png");
+	glTexImage2D(textureSkybox.target, 0, GLint(textureSkybox.channels), textureSkybox.width, textureSkybox.height, 0, textureSkybox.channels, textureSkybox.channel_type, &textureSkybox.data[0]);
+
 }
 
 ///////////////////////////// render functions ////////////////////////////////
@@ -518,7 +537,13 @@ void render(float scale_factor, float translation_factor, float rotation_factor,
 	  glBindTexture(GL_TEXTURE_2D, texture_object_Neptune);
 	  
 	  break;
+  case 9: //Skybox
+	  color_for_planet[0] = 1.0;
+	  color_for_planet[1] = 1.0;
+	  color_for_planet[2] = 1.0;
+	  glBindTexture(GL_TEXTURE_2D, texture_object_Skybox);
 
+	  break;
   default:
 	  break;
   }
