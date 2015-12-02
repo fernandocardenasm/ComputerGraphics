@@ -4,6 +4,14 @@ in  vec4 pass_Normal;
 in  vec4 pass_Light;
 in  vec4 pass_Vertex;
 
+in vec2 pass_Texcoord;
+
+// Texture samplers
+uniform sampler2D ColorTex;
+
+//Texture color for the planets.
+vec3 texture_color = vec3(texture(ColorTex, pass_Texcoord));
+
 //Values taken from: http://www.cs.toronto.edu/~jepson/csc2503/tutorials/phong.pdf
 
 float ka = 0.1;
@@ -39,8 +47,8 @@ void main(void)
 
     //n = 8 planets + 1 moon.
 
-    out_Color = vec4(ka * color_for_planet + 
-                         diffuse * color_for_planet  + 
+    out_Color = vec4(ka * texture_color + 
+                         diffuse * texture_color  + 
                          color_for_planet * spec,
                          1.0);
 }

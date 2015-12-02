@@ -25,7 +25,6 @@
 #include <stdlib.h>                                         //To create random numbers
 #include <time.h>                                          //To use system clock as "seed" for random numbers
 
-
 #define PI 3.1415926535897932384626433832795028841971
 
 // use gl definitions from glbinding 
@@ -95,6 +94,30 @@ GLint location_color_matrix = -1;
 
 // path to the resource folders
 std::string resource_path{};
+
+//Load and create a texture
+GLuint texture_object_Sun;
+GLuint texture_object_Mercury;
+GLuint texture_object_Venus;
+GLuint texture_object_Earth;
+GLuint texture_object_Mars;
+GLuint texture_object_Jupiter;
+GLuint texture_object_Saturn;
+GLuint texture_object_Uranus;
+GLuint texture_object_Neptune;
+GLuint texture_object_Moon;
+
+//Texture for each planet
+::texture textureSun;
+::texture textureMercury;
+::texture textureVenus;
+::texture textureEarth;
+::texture textureMars;
+::texture textureJupiter;
+::texture textureSaturn;
+::texture textureUranus;
+::texture textureNeptune;
+::texture textureMoon;
 
 /////////////////////////// forward declarations //////////////////////////////
 void quit(int status);
@@ -241,7 +264,7 @@ int main(int argc, char* argv[]) {
 ///////////////////////// initialisation functions ////////////////////////////
 // load models
 void initialize_geometry() {
-	planet_model = model_loader::obj(resource_path + "models/sphere.obj", model::NORMAL);
+	planet_model = model_loader::obj(resource_path + "models/sphere.obj", model::NORMAL | model::TEXCOORD);
 
 	// generate vertex array object
 	glGenVertexArrays(1, &planet_object.vertex_AO);
@@ -263,6 +286,11 @@ void initialize_geometry() {
 	glEnableVertexAttribArray(1);
 	// second attribute is 3 floats with no offset & stride
 	glVertexAttribPointer(1, model::NORMAL.components, model::NORMAL.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::NORMAL]);
+	//Texture attribure
+	glEnableVertexAttribArray(2);
+	// TexCoord attribute
+	glVertexAttribPointer(2, model::TEXCOORD.components , model::TEXCOORD.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::TEXCOORD]);
+	//glEnableVertexAttribArray(2);
 
 	// generate generic buffer
 	glGenBuffers(1, &planet_object.element_BO);
@@ -300,6 +328,107 @@ void initialize_geometry() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, star_object.element_BO);
 	// configure currently bound array buffer
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(float) * v_star_position.size(), &v_star_position[0], GL_STATIC_DRAW);
+	
+	// Texture 0 Sun
+	// ====================
+	glActiveTexture(GL_TEXTURE0);
+	glGenTextures(1, &texture_object_Sun);
+	glBindTexture(GL_TEXTURE_2D, texture_object_Sun); // All upcoming GL_TEXTURE_2D operations now have effect on our texture object
+											// Set our texture parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint) GL_LINEAR);	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint)GL_LINEAR);
+
+	textureSun = texture_loader::file(resource_path + "textures/sunmap.png");
+	glTexImage2D(textureSun.target, 0, GLint(textureSun.channels), textureSun.width, textureSun.height, 0, textureSun.channels, textureSun.channel_type, &textureSun.data[0]);
+
+	// Texture 1 Mercury
+	// ====================
+	glGenTextures(1, &texture_object_Mercury);
+	glBindTexture(GL_TEXTURE_2D, texture_object_Mercury); // All upcoming GL_TEXTURE_2D operations now have effect on our texture object
+											// Set our texture parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint)GL_LINEAR);	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint)GL_LINEAR);
+
+	textureMercury = texture_loader::file(resource_path + "textures/mercurymap.png");
+	glTexImage2D(textureMercury.target, 0, GLint(textureMercury.channels), textureMercury.width, textureMercury.height, 0, textureMercury.channels, textureMercury.channel_type, &textureMercury.data[0]);
+
+	//Texture 2 Venus
+
+	glGenTextures(1, &texture_object_Venus);
+	glBindTexture(GL_TEXTURE_2D, texture_object_Venus); // All upcoming GL_TEXTURE_2D operations now have effect on our texture object
+											// Set our texture parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint)GL_LINEAR);	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint)GL_LINEAR);
+
+	textureVenus = texture_loader::file(resource_path + "textures/venusmap.png");
+	glTexImage2D(textureVenus.target, 0, GLint(textureVenus.channels), textureVenus.width, textureVenus.height, 0, textureVenus.channels, textureVenus.channel_type, &textureVenus.data[0]);
+
+	//Texture 3 Earth
+
+	glGenTextures(1, &texture_object_Earth);
+	glBindTexture(GL_TEXTURE_2D, texture_object_Earth); // All upcoming GL_TEXTURE_2D operations now have effect on our texture object
+											// Set our texture parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint)GL_LINEAR);	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint)GL_LINEAR);
+
+	textureEarth = texture_loader::file(resource_path + "textures/earthmap.png");
+	glTexImage2D(textureEarth.target, 0, GLint(textureEarth.channels), textureEarth.width, textureEarth.height, 0, textureEarth.channels, textureEarth.channel_type, &textureEarth.data[0]);
+	
+	//Texture 4 Mars
+
+	glGenTextures(1, &texture_object_Mars);
+	glBindTexture(GL_TEXTURE_2D, texture_object_Mars); // All upcoming GL_TEXTURE_2D operations now have effect on our texture object
+											// Set our texture parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint)GL_LINEAR);	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint)GL_LINEAR);
+
+	textureMars = texture_loader::file(resource_path + "textures/marsmap.png");
+	glTexImage2D(textureMars.target, 0, GLint(textureMars.channels), textureMars.width, textureMars.height, 0, textureMars.channels, textureMars.channel_type, &textureMars.data[0]);
+	
+	//Texture 5 Jupiter
+
+	glGenTextures(1, &texture_object_Jupiter);
+	glBindTexture(GL_TEXTURE_2D, texture_object_Jupiter); // All upcoming GL_TEXTURE_2D operations now have effect on our texture object
+											// Set our texture parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint)GL_LINEAR);	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint)GL_LINEAR);
+
+	textureJupiter = texture_loader::file(resource_path + "textures/jupitermap.png");
+	glTexImage2D(textureJupiter.target, 0, GLint(textureJupiter.channels), textureJupiter.width, textureJupiter.height, 0, textureJupiter.channels, textureJupiter.channel_type, &textureJupiter.data[0]);
+	
+	//Texture 6 Saturn
+
+	glGenTextures(1, &texture_object_Saturn);
+	glBindTexture(GL_TEXTURE_2D, texture_object_Saturn); // All upcoming GL_TEXTURE_2D operations now have effect on our texture object
+											// Set our texture parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint)GL_LINEAR);	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint)GL_LINEAR);
+
+	textureSaturn = texture_loader::file(resource_path + "textures/saturnmap.png");
+	glTexImage2D(textureSaturn.target, 0, GLint(textureSaturn.channels), textureSaturn.width, textureSaturn.height, 0, textureSaturn.channels, textureSaturn.channel_type, &textureSaturn.data[0]);
+
+	//Texture 7 Uranus
+
+	glGenTextures(1, &texture_object_Uranus);
+	glBindTexture(GL_TEXTURE_2D, texture_object_Uranus); // All upcoming GL_TEXTURE_2D operations now have effect on our texture object
+											// Set our texture parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint)GL_LINEAR);	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint)GL_LINEAR);
+
+	textureUranus = texture_loader::file(resource_path + "textures/uranusmap.png");
+	glTexImage2D(textureUranus.target, 0, GLint(textureUranus.channels), textureUranus.width, textureUranus.height, 0, textureUranus.channels, textureUranus.channel_type, &textureUranus.data[0]);
+
+	//Texture 8 Neptune
+
+	glGenTextures(1, &texture_object_Neptune);
+	glBindTexture(GL_TEXTURE_2D, texture_object_Neptune); // All upcoming GL_TEXTURE_2D operations now have effect on our texture object
+											// Set our texture parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint)GL_LINEAR);	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint)GL_LINEAR);
+
+	textureNeptune = texture_loader::file(resource_path + "textures/neptunemap.png");
+	glTexImage2D(textureNeptune.target, 0, GLint(textureNeptune.channels), textureNeptune.width, textureNeptune.height, 0, textureNeptune.channels, textureNeptune.channel_type, &textureNeptune.data[0]);
+
+	//Texture 9 Moon
+
+	glGenTextures(1, &texture_object_Moon);
+	glBindTexture(GL_TEXTURE_2D, texture_object_Moon); // All upcoming GL_TEXTURE_2D operations now have effect on our texture object
+											// Set our texture parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLint)GL_LINEAR);	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLint)GL_LINEAR);
+
+	textureMoon = texture_loader::file(resource_path + "textures/moonmap.png");
+	glTexImage2D(textureMoon.target, 0, GLint(textureMoon.channels), textureMoon.width, textureMoon.height, 0, textureMoon.channels, textureMoon.channel_type, &textureMoon.data[0]);
 
 }
 
@@ -313,7 +442,7 @@ void render(float scale_factor, float translation_factor, float rotation_factor,
   float now = glfwGetTime();
   //float noww = now*0.0001*365/30.0;
   float rotation = now*0.05;
-
+  
   // Colors taken from "https://www.opengl.org/discussion_boards/showthread.php/132502-Color-tables"
   switch (number_planet)
   {
@@ -321,51 +450,82 @@ void render(float scale_factor, float translation_factor, float rotation_factor,
 	  color_for_planet[0] = 1.0;		
 	  color_for_planet[1] = 0.5;
 	  color_for_planet[2] = 0.0;
+
+	  glBindTexture(GL_TEXTURE_2D, texture_object_Sun);
+
 	  break;
   case 1:  //// Mercury planet - purple
 	  color_for_planet[0] = 1.0;
 	  color_for_planet[1] = 0.0;
 	  color_for_planet[2] = 1.0;
+
+	  glBindTexture(GL_TEXTURE_2D, texture_object_Mercury);
+
 	  break;
   case 2:  //// Venus planet 
 	  color_for_planet[0] = 0.0;
 	  color_for_planet[1] = 1.0;
 	  color_for_planet[2] = 0.0;
+
+	  glBindTexture(GL_TEXTURE_2D, texture_object_Venus);
+
 	  break;
   case 3:  //// Earth planet 
 	  color_for_planet[0] = 0.0;
 	  color_for_planet[1] = 0.0;
 	  color_for_planet[2] = 1.0;
+
+	  glBindTexture(GL_TEXTURE_2D, texture_object_Earth);
+
 	  break;
   case 4:  //// Mars planet 
 	  color_for_planet[0] = 1.0;
 	  color_for_planet[1] = 0.0;
 	  color_for_planet[2] = 0.0;
+
+	  glBindTexture(GL_TEXTURE_2D, texture_object_Mars);
+
 	  break;
   case 5:  //// Jupiter planet - cyan
 	  color_for_planet[0] = 0.0;
 	  color_for_planet[1] = 1.0;
 	  color_for_planet[2] = 1.0;
+
+	  glBindTexture(GL_TEXTURE_2D, texture_object_Jupiter);
+
 	  break;
-  case 6:  //// SAturn planet 
+  case 6:  //// Saturn planet 
 	  color_for_planet[0] = 0.5;
 	  color_for_planet[1] = 1.0;
 	  color_for_planet[2] = 0.0;
+
+	  glBindTexture(GL_TEXTURE_2D, texture_object_Saturn);
+
 	  break;
   case 7:  //// Uranus planet 
 	  color_for_planet[0] = 0.5;
 	  color_for_planet[1] = 1.0;
 	  color_for_planet[2] = 0.5;
+
+	  glBindTexture(GL_TEXTURE_2D, texture_object_Uranus);
+
 	  break;
   case 8:  //// Neptune planet 
 	  color_for_planet[0] = 0.0;
 	  color_for_planet[1] = 0.5;
 	  color_for_planet[2] = 0.0;
+
+	  glBindTexture(GL_TEXTURE_2D, texture_object_Neptune);
+	  
 	  break;
 
   default:
 	  break;
   }
+
+  int color_sampler_location = glGetUniformLocation(simple_program, "ColorTex");
+  glUseProgram(simple_program);
+  glUniform1i(color_sampler_location, 0);
  
 
 
@@ -405,10 +565,14 @@ void render(float scale_factor, float translation_factor, float rotation_factor,
 void rendermoon(float scale_factor, float translation_factor, float rotation_factor)
 {
 
+	glBindTexture(GL_TEXTURE_2D, texture_object_Moon);
+	int color_sampler_location = glGetUniformLocation(simple_program, "ColorTex");
+	glUseProgram(simple_program);
+	glUniform1i(color_sampler_location, 0);
+
 	color_for_planet[0] = 1.0;
 	color_for_planet[1] = 1.0;
 	color_for_planet[2] = 1.0;
-
 
   float now = glfwGetTime();
 
