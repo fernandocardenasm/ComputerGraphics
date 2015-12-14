@@ -82,7 +82,7 @@ model_object star_object;
 //model_object orbit_object;
 
 // camera matrices
-glm::mat4 camera_view = glm::translate(glm::mat4{}, glm::vec3{ 0.0f, 0.0f, 4.0f });
+glm::mat4 camera_transform = glm::translate(glm::mat4{}, glm::vec3{ 0.0f, 0.0f, 4.0f });
 glm::mat4 camera_projection{ 1.0f };
 
 // uniform locations
@@ -143,8 +143,8 @@ GLuint rbo;
 
 /////////////////////////// forward declarations //////////////////////////////
 void quit(int status);
-void update_view(GLFWwindow* window, int width, int height);
-void update_camera();
+void update_projection(GLFWwindow* window, int width, int height);
+void update_view();
 void update_uniform_locations();
 void update_shader_programs(int shader);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -209,7 +209,7 @@ int main(int argc, char* argv[]) {
 
   //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   // register resizing function
-  glfwSetFramebufferSizeCallback(window, update_view);
+  glfwSetFramebufferSizeCallback(window, update_projection);
 
   // initialize glindings in this context
   glbinding::Binding::initialize();
@@ -234,8 +234,8 @@ int main(int argc, char* argv[]) {
   // initialize projection and view matrices
   int width, height;
   glfwGetFramebufferSize(window, &width, &height);
-  update_view(window, width, height);
-  update_camera();
+  update_projection(window, width, height);
+  update_view();
 
   // set up models
   initialize_geometry();
@@ -582,7 +582,7 @@ void render(float scale_factor, float translation_factor, float rotation_factor,
   glUniformMatrix4fv(location_model_matrix, 1, GL_FALSE, glm::value_ptr(model_matrix));
 
   // extra matrix for normal transformation to keep them orthogonal to surface
-  glm::mat4 normal_matrix = glm::inverseTranspose(camera_view * model_matrix);
+  glm::mat4 normal_matrix = glm::inverseTranspose(glm::inverse(camera_transform) * model_matrix);
 
   glUniformMatrix4fv(location_normal_matrix, 1, GL_FALSE, glm::value_ptr(normal_matrix));
 
@@ -637,7 +637,7 @@ void rendermoon(float scale_factor, float translation_factor, float rotation_fac
 
   // extra matrix for normal transformation to keep them orthogonal to surface
 
-  glm::mat4 normal_matrix = glm::inverseTranspose(camera_view * model_matrix);
+  glm::mat4 normal_matrix = glm::inverseTranspose(glm::inverse(camera_transform) * model_matrix);
 
   glUniformMatrix4fv(location_normal_matrix, 1, GL_FALSE, glm::value_ptr(normal_matrix));
 
@@ -675,7 +675,7 @@ void renderstar(float scale_factor, float translation_factor, float rotation_fac
 
   // extra matrix for normal transformation to keep them orthogonal to surface
 
-  glm::mat4 normal_matrix = glm::inverseTranspose(camera_view * model_matrix);
+  glm::mat4 normal_matrix = glm::inverseTranspose(glm::inverse(camera_transform) * model_matrix);
 
   glUniformMatrix4fv(location_normal_matrix, 1, GL_FALSE, glm::value_ptr(normal_matrix));
 
@@ -692,7 +692,7 @@ void renderstar(float scale_factor, float translation_factor, float rotation_fac
 
 ///////////////////////////// update functions ////////////////////////////////
 // update viewport and field of view
-void update_view(GLFWwindow* window, int width, int height) {
+void update_projection(GLFWwindow* window, int width, int height) {
   // resize framebuffer
   glViewport(0, 0, width, height);
 
@@ -709,9 +709,9 @@ void update_view(GLFWwindow* window, int width, int height) {
 }
 
 // update camera transformation
-void update_camera() {
+void update_view() {
   // vertices are transformed in camera space, so camera transform must be inverted
-  glm::mat4 inv_camera_view = glm::inverse(camera_view);
+	glm::mat4 inv_camera_view = glm::inverse(camera_transform);
   // upload matrix to gpu
   glUniformMatrix4fv(location_view_matrix, 1, GL_FALSE, glm::value_ptr(inv_camera_view));
 }
@@ -748,8 +748,8 @@ void update_shader_programs(int shader) {
     // upload view uniforms to new shader
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
-    update_view(window, width, height);
-    update_camera();
+	update_projection(window, width, height);
+    update_view();
   }
   catch (std::exception&) {
     // dont crash, allow another try
@@ -776,12 +776,12 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     update_shader_programs(0);
   }
   else if (key == GLFW_KEY_W && action == GLFW_PRESS) {
-    camera_view = glm::translate(camera_view, glm::vec3{ 0.0f, 0.0f, -0.1f });
-    update_camera();
+	camera_transform = glm::translate(camera_transform, glm::vec3{ 0.0f, 0.0f, -0.1f });
+	update_view();
   }
   else if (key == GLFW_KEY_S && action == GLFW_PRESS) {
-    camera_view = glm::translate(camera_view, glm::vec3{ 0.0f, 0.0f, 0.1f });
-    update_camera();
+	camera_transform = glm::translate(camera_transform, glm::vec3{ 0.0f, 0.0f, 0.1f });
+	update_view();
   }
 }
 
