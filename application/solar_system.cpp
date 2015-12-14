@@ -121,6 +121,26 @@ GLuint texture_object_Skybox;
 ::texture textureMoon;
 ::texture textureSkybox;
 
+//Code for Assignment 4 taken from http://learnopengl.com/#!Advanced-OpenGL/Framebuffers
+
+GLfloat quadVertices[] = {   // Vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+							 // Positions   // TexCoords
+	-1.0f,  1.0f,  0.0f, 1.0f,
+	-1.0f, -1.0f,  0.0f, 0.0f,
+	1.0f, -1.0f,  1.0f, 0.0f,
+
+	-1.0f,  1.0f,  0.0f, 1.0f,
+	1.0f, -1.0f,  1.0f, 0.0f,
+	1.0f,  1.0f,  1.0f, 1.0f
+};
+
+// Framebuffers
+GLuint framebuffer;
+// Color attachment texture
+GLuint textureColorbuffer;
+// Create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
+GLuint rbo;
+
 /////////////////////////// forward declarations //////////////////////////////
 void quit(int status);
 void update_view(GLFWwindow* window, int width, int height);
@@ -238,7 +258,7 @@ int main(int argc, char* argv[]) {
   render(0.2, 0.0f, 1.0,0);
   
   //Skybox
-  render(5, 0, 0, 9);
+  //render(5, 0, 0, 9);
 
   render(0.0255,7.0f, 0.5,1);
 
@@ -300,7 +320,6 @@ void initialize_geometry() {
 	// TexCoord attribute
 	glVertexAttribPointer(2, model::TEXCOORD.components , model::TEXCOORD.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::TEXCOORD]);
 	//glEnableVertexAttribArray(2);
-
 	// generate generic buffer
 	glGenBuffers(1, &planet_object.element_BO);
 	// bind this as an vertex array buffer containing all attributes
