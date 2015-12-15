@@ -124,16 +124,6 @@ GLuint texture_object_Skybox;
 
 //Code for Assignment 4 taken from http://learnopengl.com/#!Advanced-OpenGL/Framebuffers
 
-GLfloat quadVertices[] = {   // Vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
-							 // Positions   // TexCoords
-	-1.0f,  1.0f,  0.0f, 1.0f,
-	-1.0f, -1.0f,  0.0f, 0.0f,
-	1.0f, -1.0f,  1.0f, 0.0f,
-
-	-1.0f,  1.0f,  0.0f, 1.0f,
-	1.0f, -1.0f,  1.0f, 0.0f,
-	1.0f,  1.0f,  1.0f, 1.0f
-};
 
 std::vector<float> screenQuadVertices{   // Vertex attributes for a quad.						 // Positions   // Uv
 	-1.0f,  -1.0f,  0.0f, 0.0f, 0.0f,
@@ -150,8 +140,8 @@ GLuint textureColorbuffer;
 // Create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
 GLuint rbo;
 
-// Setup screen VAO
-GLuint quadVAO, quadVBO;
+//The input filter option
+int filter_selection = 1; //Default view
 
 /////////////////////////// forward declarations //////////////////////////////
 void quit(int status);
@@ -806,6 +796,10 @@ void renderscreensquad()
 	glUseProgram(simple_program);
 	glUniform1i(color_sampler_location, 0);
 
+	int useToonShaderUniformLocation = glGetUniformLocation(simple_program, "filterSelection");
+	glUseProgram(simple_program);
+	glUniform1i(useToonShaderUniformLocation, filter_selection);
+
 	glm::mat4 normal_matrix = glm::inverseTranspose(glm::inverse(camera_transform) * model_matrix);
 
 	glUniformMatrix4fv(location_normal_matrix, 1, GL_FALSE, glm::value_ptr(normal_matrix));
@@ -923,6 +917,21 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
   else if (key == GLFW_KEY_S && action == GLFW_PRESS) {
 	camera_transform = glm::translate(camera_transform, glm::vec3{ 0.0f, 0.0f, 0.1f });
 	update_view();
+  }
+  else if(key == GLFW_KEY_7 && action == GLFW_PRESS){
+	  std::cout << "Press 7";
+	  //Grey Scale
+	  filter_selection = 7;
+  }
+  else if (key == GLFW_KEY_0 && action == GLFW_PRESS) {
+	  std::cout << "Press 0";
+	  filter_selection = 0;
+	  //Blured Image
+  }
+  else if (key == GLFW_KEY_1 && action == GLFW_PRESS) {
+	  std::cout << "Press 1";
+	  filter_selection = 1;
+	  //Default
   }
 }
 
