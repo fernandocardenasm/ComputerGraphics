@@ -124,7 +124,7 @@ GLuint texture_object_Skybox;
 
 //Code for Assignment 4 taken from http://learnopengl.com/#!Advanced-OpenGL/Framebuffers
 
-
+/*
 std::vector<float> screenQuadVertices{   // Vertex attributes for a quad.						 // Positions   // Uv
 	-1.0f,  -1.0f,  0.0f, 0.0f, 0.0f,
 	1.0f, -1.0f,  0.0f, 1.0f, 0.0f,
@@ -132,6 +132,18 @@ std::vector<float> screenQuadVertices{   // Vertex attributes for a quad.						 
 	1.0f, 1.0f,  0.0f, 1.0f, 1.0f,
 	
 };
+*/
+
+
+std::vector<float> screenQuadVertices{   // Vertex attributes for a quad.						 // Positions   // Uv
+	-1.0f,  -1.0f,  0.0f, 0.0f, 0.0f,
+	-1.0f,  1.0f,  0.0f, 0.0f, 1.0f,
+	1.0f, -1.0f,  0.0f, 1.0f, 0.0f,
+	1.0f, 1.0f,  0.0f, 1.0f, 1.0f,
+
+};
+
+
 
 // Framebuffers
 GLuint framebuffer;
@@ -244,6 +256,7 @@ int main(int argc, char* argv[]) {
   update_view();
 
 
+  //initializeFrameBuffer(width, height);
   initializeFrameBuffer(width, height);
 
   // set up models
@@ -834,8 +847,6 @@ void update_projection(GLFWwindow* window, int width, int height) {
   camera_projection = glm::perspective(fov_y, aspect, 0.1f, 10.0f);
   // upload matrix to gpu
   glUniformMatrix4fv(location_projection_matrix, 1, GL_FALSE, glm::value_ptr(camera_projection));
-
-  //updateFrameBuffer(width, height);
 }
 
 // update camera transformation
@@ -992,6 +1003,11 @@ GLuint generateAttachmentTexture(bool depth, bool stencil, int screenWidth, int 
 }
 
 void initializeFrameBuffer(int width, int height) {
+	
+	//Unbinding
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 	//Framebuffer
 
 	glGenFramebuffers(1, &framebuffer);
@@ -1018,7 +1034,7 @@ void initializeFrameBuffer(int width, int height) {
 		std::cout << "Framebuffer is complete!";
 	}
 
-	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void updateFrameBuffer(int width, int height) {
@@ -1029,12 +1045,12 @@ void updateFrameBuffer(int width, int height) {
 
 	// Create a color attachment texture
 	textureColorbuffer = generateAttachmentTexture(false, false, width, height);
-	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
 	// Create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
 
 	//glGenRenderbuffers(1, &rbo);
 	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-	//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height); // Use a single renderbuffer object for both a depth AND stencil buffer.
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height); // Use a single renderbuffer object for both a depth AND stencil buffer.
 																				//glBindRenderbuffer(GL_RENDERBUFFER, 0);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo); // Now actually attach it
 
@@ -1048,5 +1064,5 @@ void updateFrameBuffer(int width, int height) {
 		std::cout << "Framebuffer is complete!";
 	}
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
