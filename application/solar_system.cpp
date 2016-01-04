@@ -124,7 +124,7 @@ GLuint texture_object_Skybox;
 
 //Code for Assignment 4 taken from http://learnopengl.com/#!Advanced-OpenGL/Framebuffers
 
-/*
+
 std::vector<float> screenQuadVertices{   // Vertex attributes for a quad.						 // Positions   // Uv
 	-1.0f,  -1.0f,  0.0f, 0.0f, 0.0f,
 	1.0f, -1.0f,  0.0f, 1.0f, 0.0f,
@@ -132,9 +132,9 @@ std::vector<float> screenQuadVertices{   // Vertex attributes for a quad.						 
 	1.0f, 1.0f,  0.0f, 1.0f, 1.0f,
 	
 };
-*/
 
 
+/*
 std::vector<float> screenQuadVertices{   // Vertex attributes for a quad.						 // Positions   // Uv
 	-1.0f,  -1.0f,  0.0f, 0.0f, 0.0f,
 	-1.0f,  1.0f,  0.0f, 0.0f, 1.0f,
@@ -142,7 +142,7 @@ std::vector<float> screenQuadVertices{   // Vertex attributes for a quad.						 
 	1.0f, 1.0f,  0.0f, 1.0f, 1.0f,
 
 };
-
+*/
 
 
 // Framebuffers
@@ -412,7 +412,7 @@ void initialize_geometry() {
 	// activate second attribute on gpu
 	glEnableVertexAttribArray(1);
 	// second attribute is 3 floats with no offset & stride
-	glVertexAttribPointer(1, model::NORMAL.components, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (GLvoid*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, model::TEXCOORD.components, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (GLvoid*)(3 * sizeof(float)));
 
 	// generate generic buffer
 	glGenBuffers(1, &squadscreen_object.element_BO);
